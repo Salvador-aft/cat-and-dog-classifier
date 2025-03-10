@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat and Dog Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+        #imageInput {
+            margin-bottom: 20px;
+        }
+        #imagePreview {
+            margin: 20px auto;
+            max-width: 100%;
+            height: auto;
+            display: none;
+        }
+        #uploadForm button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #uploadForm button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        #loading {
+            display: none;
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cat and Dog Classifier</h1>
+        <form id="uploadForm">
+            <input type="file" id="imageInput" accept="image/*" required>
+            <img id="imagePreview" src="#" alt="Image Preview">
+            <button type="submit">Upload and Predict</button>
+        </form>
+        <div id="loading">Processing... Please wait.</div>
+        <div id="result"></div>
+    </div>
+    <script>
+        document.getElementById("imageInput").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const imagePreview = document.getElementById("imagePreview");
+                    imagePreview.src = event.target.result;
+                    imagePreview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const fileInput = document.getElementById("imageInput");
+            const resultDiv = document.getElementById("result");
+            const loadingDiv = document.getElementById("loading");
+
+            if (fileInput.files.length === 0) {
+                resultDiv.textContent = "Please select an image.";
+                return;
+            }
+
+            resultDiv.textContent = "";
+
+            // Mostrar el mensaje de loading
+            loadingDiv.style.display = "block";
+
+            setTimeout(async () => {
+                try {
+                    const formData = new FormData();
+                    formData.append("file", fileInput.files[0]);
+
+                    const response = await fetch("/predict", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Prediction failed.");
+                    }
+
+                    const data = await response.json();
+                    resultDiv.textContent = `The image is a ${data.result}!`;
+                } catch (error) {
+                    resultDiv.textContent = "Error: " + error.message;
+                } finally {
+                    loadingDiv.style.display = "none";
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
