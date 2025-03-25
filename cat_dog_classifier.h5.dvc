@@ -1,0 +1,5 @@
+outs:
+- md5: 0e0ce1fec46e5c55731e6541a19e97b7
+  size: 228457760
+  hash: md5
+  path: cat_dog_classifier.h5
